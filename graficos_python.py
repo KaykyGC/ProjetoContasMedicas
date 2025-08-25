@@ -19,8 +19,11 @@ with open("nomes.txt", "r", encoding="utf-8") as arquivo:
     for linha in arquivo:
         nomes.append(linha.strip())
 
-convenios = ['Unimed', 'Amil', 'Bradesco Saúde', 'Sul América', 'NotreDame Intermédica', 'Porto Seguro']
-
+convenios = []
+with open("convenios.txt", "r", encoding="utf-8") as arquivo:
+    for linha in arquivo:
+       convenios.append(linha.strip())
+       
 idades = np.random.randint(18,60)
 
 
