@@ -14,7 +14,10 @@ num_datas = 50 # quantidade de datas aleatórias
 
 datas = random_dates(start_date, end_date, n=num_datas)
 
-nomes = ['Manuela', 'Monique', 'Marcela', 'Michele', 'Charlize', 'Paula', 'Paulo', 'Heitor', 'Kayky']
+nomes = []
+with open("nomes.txt", "r", encoding="utf-8") as arquivo:
+    for linha in arquivo:
+        nomes.append(linha.strip())
 
 convenios = ['Unimed', 'Amil', 'Bradesco Saúde', 'Sul América', 'NotreDame Intermédica', 'Porto Seguro']
 
@@ -29,5 +32,4 @@ df = pd.DataFrame({
 })
 print(df)
 df.to_csv('dados_pacientes.csv', index=False)
-
 
