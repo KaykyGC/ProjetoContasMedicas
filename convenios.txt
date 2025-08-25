@@ -6,8 +6,7 @@ Amil
 Assefaz
 Assim 
 Bacen Mapa 
-BNDES Barra
-BNDES Niterói
+BNDES 
 Bradesco 
 Caberj Integral
 Cac 
@@ -28,27 +27,24 @@ INB
 Ipalerj
 Marinha
 Mediservice 
-Memorial Botafogo - Barra
-Memorial Saúde - Barra
+Memorial Botafogo
+Memorial Saúde
 MPT
 MPU
 Mútua
 Notre Dame
 Nuclep
 Omint
-Petrobrás Barra
-Petrobrás Niterói
-Petrobrás Nova Iguaçu
+Petrobrás 
 Porto Seguro
 Postal Saúde 
 Proasa
 Real Grandeza
 Sindifisco Barra
-Sul América Barra
-Sul América Niterói
-Sul América Nova Iguaçu
-Unimed Leste 2 - Niterói
+Sul América
+Unimed Leste 
 Unimed Rio
 Unimed Seguros
 Vale
+
 Pasa
