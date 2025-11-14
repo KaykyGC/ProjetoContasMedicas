@@ -1,5 +1,5 @@
 Abas
-Aeronáutica - HCA
+Aeronautica - HCA
 Allianz
 Amafrerj
 Amil 
@@ -19,8 +19,8 @@ Casembrapa
 Cassi
 Caurj
 Cnen
-Eletros Saúde
-Fio Saúde
+Eletros Saude
+Fio Saude
 Gama
 Geap 
 INB
@@ -28,23 +28,22 @@ Ipalerj
 Marinha
 Mediservice 
 Memorial Botafogo
-Memorial Saúde
+Memorial Saude
 MPT
 MPU
 Mútua
 Notre Dame
 Nuclep
 Omint
-Petrobrás 
+Petrobras 
 Porto Seguro
 Postal Saúde 
 Proasa
 Real Grandeza
 Sindifisco Barra
-Sul América
+Sul America
 Unimed Leste 
 Unimed Rio
 Unimed Seguros
 Vale
-
 Pasa
