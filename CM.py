@@ -3,9 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-nomes_path = os.path.join(script_dir, "nomes.txt")
-convenios_path = os.path.join(script_dir, "convenios.txt")
+diretorio_script = os.path.dirname(os.path.abspath(__file__))
+nomes_path = os.path.join(diretorio_script, 'BaseDados', 'nomes.txt')
+convenios_path = os.path.join(diretorio_script, 'BaseDados', 'convenios.txt')
 
 # Função para gerar datas aleatórias
 def random_dates(start, end, n=10):
@@ -13,8 +13,8 @@ def random_dates(start, end, n=10):
     end_u = end.value // 10**9
     return pd.to_datetime(np.random.randint(start_u, end_u, n), unit='s')
 
-start_date = pd.to_datetime('01-01-2025')
-end_date = pd.to_datetime('31-12-2025')
+start_date = pd.to_datetime('01-01-2025', format='%d-%m-%Y')
+end_date = pd.to_datetime('31-12-2025', format='%d-%m-%Y')
 num_datas = 50  # quantidade de datas aleatórias
 
 datas = random_dates(start_date, end_date, n=num_datas)
@@ -39,15 +39,27 @@ ids = [str(num).zfill(5) for num in np.random.choice(range(1, 99999), num_datas,
 
 nomes_unicos = np.random.choice(nomes, num_datas, replace=False)
 
-tipo_clinica = ['Oncologia', 'Demartologia']
+# Gerar clinica
+tipo_clinica = ['Oncologia', 'Demartologia', 'Pneumologia', 'Cardiologia', 'Neurologia', 'Gastroenterologia', 'Ortopedia', 'Oftalmologia', 'Fisioterapia','Psiquiatria','pediatria']
+clinicas_escolhidas = np.random.choice(tipo_clinica, num_datas)
+
+idades_geradas = []
+for clinica in clinicas_escolhidas:
+    if clinica == 'pediatria':
+        # Se for pediatria, idade entre 0 e 14 anos (o 15 é exclusivo)
+        idades_geradas.append(np.random.randint(0, 15))
+    else:
+        # Para as outras clínicas, idade entre 15 e 90 anos
+        idades_geradas.append(np.random.randint(15, 91))
+
 
 # Criar DataFrame
 df = pd.DataFrame({
     'id_paciente': ids,
     'nome': nomes_unicos,
     'convenio': np.random.choice(convenios, num_datas),
-    'Clinica': np.random.choice(tipo_clinica, num_datas), 
-    'idade': np.random.randint(18, 60, num_datas),
+    'Clinica': clinicas_escolhidas, 
+    'idade': idades_geradas,
     'data': pd.Series(datas).dt.strftime('%d/%m/%Y'), # Apenas Data
     'hora': pd.Series(datas).dt.strftime('%H:%M:%S') # Apenas Hora
 })
@@ -88,10 +100,13 @@ for bar in bars:
 
 plt.subplots_adjust(left=0.4)
 
-grafico_path = os.path.join(script_dir, 'projeto_contas_grafico.png')
+grafico_path = os.path.join(diretorio_script, 'projeto_contas_grafico.png')
 plt.savefig(grafico_path, dpi=150, bbox_inches='tight')
 
 print(f"\nGráfico 'projeto_contas_grafico.png' salvo com sucesso!")
 
-# Exportar para Excel
-df.to_excel('planilha2.xlsx', sheet_name='Dados', index=False)
+# Cria o caminho completo para o Excel
+excel_path = os.path.join(diretorio_script, 'planilha2.xlsx')
+
+# Salva usando o caminho completo
+df.to_excel(excel_path, sheet_name='Dados', index=False)
