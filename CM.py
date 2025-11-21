@@ -39,11 +39,14 @@ ids = [str(num).zfill(5) for num in np.random.choice(range(1, 99999), num_datas,
 
 nomes_unicos = np.random.choice(nomes, num_datas, replace=False)
 
+tipo_clinica = ['Oncologia', 'Demartologia']
+
 # Criar DataFrame
 df = pd.DataFrame({
     'id_paciente': ids,
     'nome': nomes_unicos,
     'convenio': np.random.choice(convenios, num_datas),
+    'Clinica': np.random.choice(tipo_clinica, num_datas), 
     'idade': np.random.randint(18, 60, num_datas),
     'data': pd.Series(datas).dt.strftime('%d/%m/%Y'), # Apenas Data
     'hora': pd.Series(datas).dt.strftime('%H:%M:%S') # Apenas Hora
