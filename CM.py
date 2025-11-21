@@ -3,32 +3,35 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+# --- CONFIGURAÇÃO DE CAMINHOS ---
+# Garante que o script encontre os arquivos na pasta 'BaseDados' relativa ao script
 diretorio_script = os.path.dirname(os.path.abspath(__file__))
 nomes_path = os.path.join(diretorio_script, 'BaseDados', 'nomes.txt')
 convenios_path = os.path.join(diretorio_script, 'BaseDados', 'convenios.txt')
 
-# Definição de Datas
+# --- CONFIGURAÇÕES GERAIS ---
 start_date = pd.to_datetime('01-01-2025', format='%d-%m-%Y')
 end_date = pd.to_datetime('31-12-2025', format='%d-%m-%Y')
-num_datas = 50
+num_datas = 500  # Quantidade de linhas a gerar
 
-# Dicionário de Preços e Procedimentos (A "Tabela de Preços")
-# Valores baseados em médias particulares/convênios
+# --- 1. TABELA DE PREÇOS E PROCEDIMENTOS ---
+# Valores baseados em pesquisa de mercado 2024/2025 (Médias Particulares e CBHPM)
+# Valores quebrados para simular taxas reais e impostos
 tabela_precos = {
-    'Oncologia':         {'cons': 500.00, 'trat_nome': 'Sessão de Quimioterapia', 'trat_valor': 1500.00},
-    'Dermatologia':      {'cons': 350.00, 'trat_nome': 'Cauterização de Lesão',   'trat_valor': 600.00},
-    'Pneumologia':       {'cons': 400.00, 'trat_nome': 'Espirometria Completa',   'trat_valor': 250.00},
-    'Cardiologia':       {'cons': 450.00, 'trat_nome': 'Ecocardiograma',          'trat_valor': 580.00},
-    'Neurologia':        {'cons': 600.00, 'trat_nome': 'Eletroencefalograma',     'trat_valor': 400.00},
-    'Gastroenterologia': {'cons': 400.00, 'trat_nome': 'Endoscopia Digestiva',    'trat_valor': 950.00},
-    'Ortopedia':         {'cons': 350.00, 'trat_nome': 'Infiltração Articular',   'trat_valor': 700.00},
-    'Oftalmologia':      {'cons': 300.00, 'trat_nome': 'Mapeamento de Retina',    'trat_valor': 450.00},
-    'Fisioterapia':      {'cons': 150.00, 'trat_nome': 'Sessão de Reabilitação',  'trat_valor': 120.00},
-    'Psiquiatria':       {'cons': 500.00, 'trat_nome': 'Estimulação Magnética',   'trat_valor': 800.00},
-    'pediatria':         {'cons': 350.00, 'trat_nome': 'Nebulização Assistida',   'trat_valor': 150.00}
+    'Oncologia':         {'cons': 523.42, 'trat_nome': 'Sessão de Quimioterapia', 'trat_valor': 1856.32},
+    'Dermatologia':      {'cons': 365.85, 'trat_nome': 'Cauterização de Lesão',   'trat_valor': 266.45},
+    'Pneumologia':       {'cons': 412.30, 'trat_nome': 'Espirometria Completa',   'trat_valor': 245.88},
+    'Cardiologia':       {'cons': 468.75, 'trat_nome': 'Ecocardiograma',          'trat_valor': 634.20},
+    'Neurologia':        {'cons': 615.50, 'trat_nome': 'Eletroencefalograma',     'trat_valor': 328.90},
+    'Gastroenterologia': {'cons': 425.60, 'trat_nome': 'Endoscopia Digestiva',    'trat_valor': 1344.92},
+    'Ortopedia':         {'cons': 385.40, 'trat_nome': 'Infiltração Articular',   'trat_valor': 845.55},
+    'Oftalmologia':      {'cons': 312.15, 'trat_nome': 'Mapeamento de Retina',    'trat_valor': 287.66},
+    'Fisioterapia':      {'cons': 165.80, 'trat_nome': 'Sessão de Reabilitação',  'trat_valor': 118.45},
+    'Psiquiatria':       {'cons': 532.10, 'trat_nome': 'Estimulação Magnética',   'trat_valor': 489.90},
+    'pediatria':         {'cons': 345.50, 'trat_nome': 'Nebulização Assistida',   'trat_valor': 45.30}
 }
 
-# Dicionário de Médicos por Especialidade
+# --- 2. BANCO DE DADOS DE MÉDICOS ---
 medicos_db = {
     'Oncologia':         ['Dr. House', 'Dra. Wilson'],
     'Dermatologia':      ['Dra. Pimple', 'Dr. Skin'],
@@ -43,15 +46,46 @@ medicos_db = {
     'pediatria':         ['Dr. Kids', 'Dra. Baby']
 }
 
-# Função para gerar datas aleatórias com horário restrito
-def random_dates_restricted(start, end, n):
+# --- 3. FUNÇÃO: ESTIMAR SEXO PELO NOME (ATUALIZADA COM A LISTA) ---
+def estimar_sexo(nome_completo):
+    """Tenta adivinhar o sexo baseado no primeiro nome para manter consistência"""
+    # Se for nome genérico tipo "Paciente 1", sorteia
+    if "Paciente" in nome_completo:
+        return np.random.choice(['M', 'F'])
     
-    # Gera dias aleatórios
+    primeiro_nome = nome_completo.split()[0].lower()
+    
+    # Lista de exceções femininas que NÃO terminam em 'a' (Baseado no seu arquivo nomes.txt)
+    femininos_excecao = [
+        'alice', 'aline', 'beatriz', 'caroline', 'cristiane', 'daiane', 'daniele', 
+        'elaine', 'elis', 'ester', 'fabiane', 'ingrid', 'isabel', 'isabelle', 
+        'jaqueline', 'liz', 'luciene', 'maite', 'marlene', 'marli', 'michele', 
+        'michelle', 'monique', 'nicole', 'raquel', 'regiane', 'simone', 'solange', 
+        'sueli', 'tais', 'tatiane', 'thaís', 'viviane', 'carmen', 'luz'
+    ]
+    
+    # Lista de exceções masculinas que TERMINAM em 'a' (raros em PT, mas existem)
+    masculinos_excecao = ['luca', 'gianluca', 'nicolas', 'lucas', 'cineas', 'andrea']
+
+    if primeiro_nome in femininos_excecao:
+        return 'F'
+    if primeiro_nome in masculinos_excecao:
+        return 'M'
+    
+    # Regra geral do Português: Termina em 'a' -> Feminino, caso contrário -> Masculino
+    if primeiro_nome.endswith('a'):
+        return 'F'
+    return 'M'
+
+# --- 4. FUNÇÃO: DATAS RESTRITAS (08h as 19h) ---
+def random_dates_restricted(start, end, n):
+    # Gera dias aleatórios dentro do ano
     date_range = (end - start).days
     random_days = np.random.randint(0, date_range, n)
     dates = start + pd.to_timedelta(random_days, unit='D')
     
-    # Gera horas restritas (8h até 18h59)
+    # Gera hora entre 8 e 18 (o range(8, 19) vai de 8 até 18)
+    # Assim garantimos horários tipo 18:59:59, mas nunca 19:01 ou 07:59
     random_hours = np.random.randint(8, 19, n) 
     random_minutes = np.random.randint(0, 60, n)
     random_seconds = np.random.randint(0, 60, n)
@@ -62,18 +96,16 @@ def random_dates_restricted(start, end, n):
     
     return final_dates
 
-# Ler nomes
+# --- 5. CARREGAMENTO DE ARQUIVOS ---
 nomes = []
 if not os.path.exists(nomes_path):
-    # Cria dados fake se o arquivo não existir (para teste)
+    # Fallback se o arquivo não existir
     nomes = [f"Paciente {i}" for i in range(100)]
-    convenios = ["Unimed", "Bradesco", "Sulamerica", "Particular"]
 else:
     with open(nomes_path, "r", encoding="utf-8", errors='replace') as arquivo:
         for linha in arquivo:
             nomes.append(linha.strip())
 
-# Ler convênios
 convenios = []
 if os.path.exists(convenios_path):
     with open(convenios_path, "r", encoding="utf-8") as arquivo:
@@ -82,41 +114,45 @@ if os.path.exists(convenios_path):
 else:
      convenios = ["Unimed", "Bradesco", "Sulamerica", "Particular"]
 
-# Garantir que temos nomes suficientes
-# assert len(nomes) >= num_datas, "A lista de nomes deve ter pelo menos a quantidade de registros."
+# --- 6. GERAÇÃO DE DADOS (Processamento) ---
 
+# Gera datas e listas iniciais
 datas = random_dates_restricted(start_date, end_date, n=num_datas)
-
-# Criar chave primária e nomes únicos
 ids = [str(num).zfill(5) for num in np.random.choice(range(1, 99999), num_datas, replace=False)]
 nomes_unicos = np.random.choice(nomes, num_datas, replace=False)
 
-# Listas para armazenar os dados gerados no loop
+# Listas vazias que serão preenchidas no loop
 clinicas_finais = []
 idades_finais = []
 tipos_atendimento = []
 procedimentos = []
 valores = []
-sexos_finais = []          # Nova lista para Sexo
-medicos_finais = []        # Nova lista para Médico
-status_financeiros = []    # Nova lista para Status Financeiro
-setores_finais = []        # Lista para Setor (movido para dentro do loop para alinhar com status)
+sexos_finais = []          
+medicos_finais = []        
+status_financeiros = []    
+setores_finais = []        
 
 lista_clinicas = list(tabela_precos.keys())
 
-# Loop Principal de Geração Lógica
-for _ in range(num_datas):
-    # 1. Escolhe a Clínica
+# LOOP PRINCIPAL
+for i in range(num_datas):
+    
+    # A. Sexo vinculado ao Nome
+    nome_atual = nomes_unicos[i]
+    sexo = estimar_sexo(nome_atual)
+    sexos_finais.append(sexo)
+
+    # B. Clínica Aleatória
     clinica = np.random.choice(lista_clinicas)
     clinicas_finais.append(clinica)
     
-    # 2. Regra da Idade (Pediatria vs Outros)
+    # C. Idade (Pediatria vs Outros)
     if clinica == 'pediatria':
         idades_finais.append(np.random.randint(0, 15))
     else:
         idades_finais.append(np.random.randint(15, 91))
     
-    # 3. Regra de Preço e Tipo (Consulta vs Tratamento)
+    # D. Tipo (Consulta 70% / Tratamento 30%) e Preço
     tipo = np.random.choice(['Consulta', 'Tratamento'], p=[0.7, 0.3])
     tipos_atendimento.append(tipo)
     
@@ -127,56 +163,57 @@ for _ in range(num_datas):
         procedimentos.append(tabela_precos[clinica]['trat_nome'])
         valores.append(tabela_precos[clinica]['trat_valor'])
 
-    # 4. NOVO: Escolhe o Médico baseado na Clínica (Especialidade)
+    # E. Médico (Vinculado à Especialidade)
     medico = np.random.choice(medicos_db[clinica])
     medicos_finais.append(medico)
 
-    # 5. NOVO: Sorteia o Sexo
-    sexo = np.random.choice(['M', 'F'], p=[0.48, 0.52])
-    sexos_finais.append(sexo)
-
-    # 6. Define o Setor (com pesos)
+    # F. Setor (Probabilidade realista)
     opcoes_setor = ['Recepção', 'Atendimento', 'Faturamento', 'Em trânsito Fatur.', 'Em trânsito Atend.', 'Em trânsito Aut.']
     pesos_setor = [0.10, 0.30, 0.45, 0.05, 0.05, 0.05]
     setor_atual = np.random.choice(opcoes_setor, p=pesos_setor)
     setores_finais.append(setor_atual)
 
-    # 7. NOVO: Define Status Financeiro baseado no Setor
-    # Se estiver na recepção ou atendimento, a conta ainda está 'Aberta'
+    # G. Status Financeiro (Vinculado ao Setor)
     if setor_atual in ['Recepção', 'Atendimento', 'Em trânsito Atend.', 'Em trânsito Aut.']:
         status_financeiros.append('Aberto')
     else:
-        # Se já está no Faturamento ou indo pra lá, pode estar Paga, Glosada ou em Auditoria
+        # Se já está no faturamento, sorteia se pagou ou glosou
         status = np.random.choice(['Pago', 'Glosa Parcial', 'Glosa Total', 'Auditoria'], p=[0.7, 0.15, 0.1, 0.05])
         status_financeiros.append(status)
 
-# Criar DataFrame
+# --- 7. CRIAÇÃO E EXPORTAÇÃO DO DATAFRAME ---
 df = pd.DataFrame({
     'id_paciente': ids,
     'nome': nomes_unicos,
-    'sexo': sexos_finais,             # Nova Coluna
+    'sexo': sexos_finais,
     'idade': idades_finais,
     'convenio': np.random.choice(convenios, num_datas),
     'Clinica': clinicas_finais,
-    'Medico': medicos_finais,         # Nova Coluna
+    'Medico': medicos_finais,
     'Setor': setores_finais,
-    'Status_Fin': status_financeiros, # Nova Coluna
+    'Status_Fin': status_financeiros,
     'Tipo': tipos_atendimento,
     'Procedimento': procedimentos,
     'Valor_R$': valores,
-    'data': pd.Series(datas).dt.strftime('%d/%m/%Y'), # Apenas Data
-    'hora': pd.Series(datas).dt.strftime('%H:%M:%S')  # Apenas Hora
+    'data': pd.Series(datas).dt.strftime('%d/%m/%Y'),
+    'hora': pd.Series(datas).dt.strftime('%H:%M:%S')
 })
 
+print("Amostra dos dados gerados:")
 print(df.head(10))
 
-# Exportar para CSV
+# Salvar CSV
 df.to_csv('dados_pacientes_completo.csv', index=False)
+print("\nArquivo CSV salvo com sucesso.")
 
-# Contagem por convênio
+# Salvar Excel
+excel_path = os.path.join(diretorio_script, 'planilha_completa.xlsx')
+df.to_excel(excel_path, sheet_name='Dados', index=False)
+print("Arquivo Excel salvo com sucesso.")
+
+# --- 8. GERAÇÃO DO GRÁFICO ---
 convenio_counts = df['convenio'].value_counts().sort_values(ascending=True)
 
-# Criar gráfico
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.figure(figsize=(12, 14))
 
@@ -191,6 +228,7 @@ ax.spines['right'].set_visible(False)
 ax.spines['left'].set_visible(False)
 ax.tick_params(axis='y', length=0)
 
+# Adiciona os números nas barras
 for bar in bars:
     plt.text(
         bar.get_width() + 0.2,
@@ -203,14 +241,7 @@ for bar in bars:
     )
 
 plt.subplots_adjust(left=0.4)
-
 grafico_path = os.path.join(diretorio_script, 'projeto_contas_grafico.png')
 plt.savefig(grafico_path, dpi=150, bbox_inches='tight')
 
-print(f"\nGráfico 'projeto_contas_grafico.png' salvo com sucesso!")
-
-# Cria o caminho completo para o Excel
-excel_path = os.path.join(diretorio_script, 'planilha_completa.xlsx')
-
-# Salva usando o caminho completo
-df.to_excel(excel_path, sheet_name='Dados', index=False)
+print(f"Gráfico salvo em: {grafico_path}")
