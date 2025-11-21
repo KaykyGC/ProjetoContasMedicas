@@ -52,6 +52,21 @@ for clinica in clinicas_escolhidas:
         # Para as outras clínicas, idade entre 15 e 90 anos
         idades_geradas.append(np.random.randint(15, 91))
 
+# Gerar Setor da Conta        
+opcoes_setor = [
+    'Recepção', 
+    'Atendimento', 
+    'Faturamento', 
+    'Em trânsito para Faturamento', 
+    'Em trânsito para Atendimento', 
+    'Em trânsito para Autorização'
+]
+
+# Definindo pesos para ser realista (Soma deve ser 1.0)
+# Faturamento é mais comum (contas fechadas), trânsito é mais raro.
+pesos_setor = [0.10, 0.30, 0.45, 0.05, 0.05, 0.05]
+
+setores_gerados = np.random.choice(opcoes_setor, num_datas, p=pesos_setor)
 
 # Criar DataFrame
 df = pd.DataFrame({
@@ -60,6 +75,7 @@ df = pd.DataFrame({
     'convenio': np.random.choice(convenios, num_datas),
     'Clinica': clinicas_escolhidas, 
     'idade': idades_geradas,
+    'Setor': setores_gerados,
     'data': pd.Series(datas).dt.strftime('%d/%m/%Y'), # Apenas Data
     'hora': pd.Series(datas).dt.strftime('%H:%M:%S') # Apenas Hora
 })
