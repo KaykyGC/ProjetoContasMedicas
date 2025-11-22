@@ -168,38 +168,23 @@ excel_path = os.path.join(diretorio_script, 'planilha_faker.xlsx')
 df.to_excel(excel_path, sheet_name='Dados', index=False)
 print(f"Arquivo Excel salvo em: {excel_path}")
 
-# 6. GRÁFICO (Mantido igual)
-convenio_counts = df['convenio'].value_counts().sort_values(ascending=True)
-plt.style.use('seaborn-v0_8-whitegrid')
-plt.figure(figsize=(12, 14))
-bars = plt.barh(convenio_counts.index, convenio_counts.values, color="#851D77", height=0.7)
-plt.title('Total de Pacientes por Convênio', fontsize=18, fontweight='bold', pad=20)
-ax = plt.gca()
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['left'].set_visible(False)
-for bar in bars:
-    plt.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height() / 2, f'{int(bar.get_width())}', va='center', ha='left', fontsize=10, color='black')
 
-plt.subplots_adjust(left=0.4)
-plt.savefig('grafico_faker.png', dpi=150, bbox_inches='tight')
-print("Gráfico gerado com sucesso.")
 
-# 7. EXPORTAÇÃO PARA SQL (BANCO DE DADOS)
+# 6. EXPORTAÇÃO PARA SQL (BANCO DE DADOS)
 print("\nIniciando exportação para Banco de Dados SQL...")
 
-# 1. Cria a conexão com um banco de dados local (cria o arquivo se não existir)
+# 6.1 Cria a conexão com um banco de dados local (cria o arquivo se não existir)
 db_path = os.path.join(diretorio_script, 'hospital_db.db')
 conexao = sqlite3.connect(db_path)
 
-# 2. Envia os dados do DataFrame direto para uma tabela SQL
+# 6.2 Envia os dados do DataFrame direto para uma tabela SQL
 # 'tb_atendimentos' será o nome da tabela lá dentro
 # if_exists='replace' substitui a tabela se ela já existir (bom para testes)
 df.to_sql('tb_atendimentos', conexao, if_exists='replace', index=False)
 
 print("Dados salvos na tabela 'tb_atendimentos' com sucesso!")
 
-# 3. (BÔNUS) Prova Real: Vamos fazer uma consulta SQL via Python para testar
+# 6.3 (BÔNUS) Prova Real: Vamos fazer uma consulta SQL via Python para testar
 cursor = conexao.cursor()
 
 # Query SQL real: Vamos contar quantos atendimentos existem por convênio via SQL
