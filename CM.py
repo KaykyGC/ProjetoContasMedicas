@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from faker import Faker 
+import sqlite3
 
 # CONFIGURAÇÃO INICIAL
 fake = Faker('pt_BR') # Configura para gerar nomes em Português do Brasil
@@ -183,3 +184,38 @@ for bar in bars:
 plt.subplots_adjust(left=0.4)
 plt.savefig('grafico_faker.png', dpi=150, bbox_inches='tight')
 print("Gráfico gerado com sucesso.")
+
+# 7. EXPORTAÇÃO PARA SQL (BANCO DE DADOS)
+print("\nIniciando exportação para Banco de Dados SQL...")
+
+# 1. Cria a conexão com um banco de dados local (cria o arquivo se não existir)
+db_path = os.path.join(diretorio_script, 'hospital_db.db')
+conexao = sqlite3.connect(db_path)
+
+# 2. Envia os dados do DataFrame direto para uma tabela SQL
+# 'tb_atendimentos' será o nome da tabela lá dentro
+# if_exists='replace' substitui a tabela se ela já existir (bom para testes)
+df.to_sql('tb_atendimentos', conexao, if_exists='replace', index=False)
+
+print("Dados salvos na tabela 'tb_atendimentos' com sucesso!")
+
+# 3. (BÔNUS) Prova Real: Vamos fazer uma consulta SQL via Python para testar
+cursor = conexao.cursor()
+
+# Query SQL real: Vamos contar quantos atendimentos existem por convênio via SQL
+query = """
+SELECT convenio, COUNT(*) as total 
+FROM tb_atendimentos 
+GROUP BY convenio 
+ORDER BY total DESC
+"""
+
+print("\n--- RESULTADO DA CONSULTA SQL (TOP CONVÊNIOS) ---")
+resultado = cursor.execute(query).fetchall()
+
+for linha in resultado:
+    print(f"Convênio: {linha[0]} | Total: {linha[1]}")
+
+# Fecha a conexão para salvar tudo
+conexao.close()
+print("\nConexão com Banco de Dados encerrada.")
